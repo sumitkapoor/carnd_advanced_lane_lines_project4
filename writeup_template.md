@@ -1,6 +1,7 @@
 # **Advanced Lane Finding**
 
 ## Introduction
+
 A self driving car needs to detect the lanes and the curves on the road, so that the car abides the lane rules and does not go off road.
 
 The document describes the steps taken to process a camera input of the road and detect lanes. Each image from the the video is analyzed and the detected lanes are then plotted back onto the image.
@@ -29,7 +30,7 @@ The goals  of this project are the following:
 ### 1. Solution
 Once the image is read it is passed to a pipeline to detect lane lines consisting of the following series of steps :
 
-* **Step 1 : Compute the calibration matrix and distortion coefficients **
+* ###### Step 1 : Compute the calibration matrix and distortion coefficients
 The images that are taken by camera are usually distorted. To undistort the image, it is required to calibrate the camera.
 To calibrate the images, a set of 9 x 6 chessboard images have been provided along with the project.
 
@@ -38,27 +39,44 @@ The images are first converted into grey-scale and then we use Open CV's funtion
 
 Using Open CV's function *cv2.calibrateCamera()* with objectpoints, imagepoints and image size get the calibration matrix and distortion coeffifients. 
 
-* **Step 2 : Apply Distortion Correction **
+* ###### Step 2 : Apply Distortion Correction
 The calibration matrix and distortion coeffifients calculated in the step above are then passed to Open CV's function *cv2.undistort()* to undistort the image.
 
 ![@Original | left | img02](./output_images/original_image.png)![@Undistorted | right | img03](./output_images/undistorted.png)
 
-* **Step 3 : Create a threshold binary image **
+* ###### Step 3 : Create a threshold binary image
 Color transforms and threshold gradients are then applied to the undistorted image to create a binary image. Binary image contains the representation of the image in binary 0s and 1s instead of Blue, Green and Red color. Applying the correct thresholds to the image makes it easier to remove noise and detect the lane pixels. After experimenting with various thresholds gradients for both x and y direction, applying thresholds on the magnitude and direction of the gradient and different color transforms I ended up applying thresholds on Lightness and Saturation over x direction. For this I had to transform the color from BGR to HSV using Open CV's function *cv2.cvtColor()*
 
 Applying Lightness mask resulted in the following:
+
+-----
+
 ![@Original | center | img04](./output_images/light_mask.png)
+
+-----
+
 Applying thresholds on Lightness transform over x direction:
+
+------
+
 ![@Original | center | img05](./output_images/l_binary.png)
-Applying threshold on Saturation transform over
+
+------
+
+Applying threshold on Saturation transform over x direction:
+
+-----
+
 ![@Original | center | img06](./output_images/s_binary.png)
 
-The combined binary image resulted in better lane detection for lanes tar roads, pavements and under shadows.
+-----
+
+The combined binary image resulted in better lane detection for lanes on tar roads, pavements and under shadows.
 ```python
 combined[((lx_binary == 1) | (sx_binary == 1)) & (light_mask == 1)] = 1
 ```
 
-* **Step 4 : Applying Perspective Transform **
+* ###### Step 4 : Applying Perspective Transform
 To detect lanes on the roads, the image is then wrapped. For this the *src* and *dst* array of points are calculated, keeping the region of interest (the lanes) under consideration. For y axis the cut off was set to 450, while for x axis 120 pixels were removed from both ends.
 
 
@@ -89,7 +107,7 @@ I verified that my perspective transform was working as expected by drawing the 
 
 ![@Wraped | left | img07](./output_images/wraped_image.png)![@Wraped Combine | right | img08](./output_images/wraped_combined.png)
 
-* **Step 5 : Detecting lane lines **
+* ###### Step 5 : Detecting lane lines
 The next step was to detect the lane line. This was done by first getting the histogram for the pixels within the wraped binary image.
 
 ![@Histogram | center | img08](./output_images/histogram.png)
@@ -100,7 +118,7 @@ Using the lanes pixels detected from the histogram as the starting point, identi
 
 Ones the non-zero pixel corresponding to the lanes have been detected, draw the line for the lanes. We use these pixels to fit the second order polynomial:
 
-f(y) = Ay<sub>2</sub> + By + C
+f(y) = Ay<sup>2</sup> + By + C
 
 Here we are fitting for f(y), rather than f(x), because the lane lines in the warped image are near vertical and may have the same x value for more than one y value.
 
@@ -108,7 +126,7 @@ Here we are fitting for f(y), rather than f(x), because the lane lines in the wa
 
 *Note : While working on the video, it is a good practice to use the averaged line fits of the current and a few previous fits*
 
-* **Step 6 : Calculating the curvature of the lane and vehicle position with respect to center**
+* ###### Step 6 : Calculating the curvature of the lane and vehicle position with respect to center
 
 Using the equation provided in the following [link](http://www.intmath.com/applications-differentiation/8-radius-curvature.php), the radius of curvature for the lanes was calculated. As the result was in pixels, the following conversions were done to get the radius in meters.
 
@@ -129,18 +147,20 @@ Using the equation provided in the following [link](http://www.intmath.com/appli
 
 The position of the the vehicle with respect to the center was measured by taking the average of the x intercepts of left and right line.
 
-* **Step 7 : Warp the detected lane boundaries back onto the original image**
+* ###### Step 7 : Warp the detected lane boundaries back onto the original image
 
 The image was then un-wrapped using the transformation matrix calculated using Open CV's function *cv2.getPerspectiveTransform()* now using original *dst* points as the source points and *src* points as the destination points.
 
-* ** Step 8 : Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position**
+* ###### Step 8 : Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position
 
 Fill the area between the lines on the un-wrapped image, and use it as an overlay over the original undistorted image.
 
 ![@Output Image | center | img10](./output_images/output.png)
+
 ---
 
-## Project Video
+##  Project Video
+
 
 [![@Project Video | center | img11](http://img.youtube.com/vi/QI53COPx2_0/0.jpg)](http://www.youtube.com/watch?v=QI53COPx2_0)
 

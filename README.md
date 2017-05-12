@@ -73,7 +73,7 @@ Applying threshold on Saturation transform over x direction:
 
 -----
 
-The combined binary image resulted in better lane detection for lanes tar roads, pavements and under shadows.
+The combined binary image resulted in better lane detection for lanes on tar roads, pavements and under shadows.
 ```python
 combined[((lx_binary == 1) | (sx_binary == 1)) & (light_mask == 1)] = 1
 ```
@@ -120,7 +120,7 @@ Using the lanes pixels detected from the histogram as the starting point, identi
 
 Ones the non-zero pixel corresponding to the lanes have been detected, draw the line for the lanes. We use these pixels to fit the second order polynomial:
 
-f(y) = Ay<sub>2</sub> + By + C
+f(y) = Ay<sup>2</sup> + By + C
 
 Here we are fitting for f(y), rather than f(x), because the lane lines in the warped image are near vertical and may have the same x value for more than one y value.
 
